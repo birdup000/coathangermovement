@@ -2,6 +2,7 @@ import tkinter as tk
 
 root = tk.Tk()
 root.title("Workout Log")
+root.geometry("800x600")
 
 # Create a dictionary of workout types and their corresponding exercises
 workouts = {
@@ -42,7 +43,7 @@ reps_entry = tk.Entry(root, textvariable=reps_var)
 reps_entry.pack(pady=5)
 
 # Create a list to display the workout history
-workout_list = tk.Listbox(root)
+workout_list = tk.Listbox(root, height=20, width=50)
 workout_list.pack(pady=10)
 
 # Create a button to add the workout
