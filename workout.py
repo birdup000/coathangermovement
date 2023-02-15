@@ -4,48 +4,59 @@ root = tk.Tk()
 root.title("Workout Log")
 root.geometry("800x600")
 
+units = {"lbs", "kg"}
+
 workouts = {
     "Weightlifting": ["Bench Press", "Deadlift", "Squat", "Bicep Curls", "Tricep Dips"],
     "Cardio": ["Running", "Cycling", "Swimming"],
     "Yoga": ["Vinyasa", "Hatha", "Bikram", "Ashtanga", "Iyengar"]
 }
 
-# Add BMI Calculator
-def calculate_bmi():
-    try:
-        weight = float(weight_var.get())
-        height = float(height_var.get())
-        if weight <= 0 or height <= 0:
-            raise ValueError("Weight and height must be positive")
-        if weight_unit_var.get() == "kg":
-            bmi = weight / (height/100)**2
-        else:
-            bmi = (weight * 703) / height**2
-        bmi_var.set(f"{bmi:.2f}")
-    except ValueError as e:
-        bmi_var.set(str(e))
+def update_exercise_dropdown(*args):
+    exercise_dropdown['menu'].delete(0, 'end')
+    for exercise in workouts[workout_type_var.get()]:
+        exercise_dropdown['menu'].add_command(label=exercise, command=tk._setit(exercise_var, exercise))
 
-weight_var, height_var, weight_unit_var, bmi_var = tk.StringVar(), tk.StringVar(), tk.StringVar(value="kg"), tk.StringVar()
-tk.Label(root, text="BMI Calculator").pack(pady=10)
-tk.Entry(root, textvariable=weight_var).pack(pady=5)
-tk.Label(root, text="Weight Unit:").pack(pady=10)
-tk.OptionMenu(root, weight_unit_var, "kg", "lbs").pack(pady=5)
-tk.Entry(root, textvariable=height_var).pack(pady=5)
-tk.Button(root, text="Calculate BMI", command=calculate_bmi).pack(pady=5)
-tk.Label(root, text="BMI:").pack(pady=10)
-tk.Label(root, textvariable=bmi_var).pack(pady=5)
+workout_type_var = tk.StringVar(value="Weightlifting")
+exercise_var = tk.StringVar(value=workouts[workout_type_var.get()][0])
+sets_var = tk.StringVar(value="1")
+reps_var = tk.StringVar(value="10")
+units_var = tk.StringVar(value="lbs")
 
-# Add workout log
-workout_type_var, exercise_var, sets_var, reps_var = tk.StringVar(value="Weightlifting"), tk.StringVar(), tk.StringVar(value="1"), tk.StringVar(value="10")
-tk.OptionMenu(root, workout_type_var, *workouts.keys(), command=lambda _: (exercise_var.set(workouts[workout_type_var.get()][0]), [exercise_dropdown['menu'].add_command(label=exercise, command=lambda exercise=exercise: exercise_var.set(exercise)) for exercise in workouts[workout_type_var.get()]]),).pack(pady=10)
+workout_type_dropdown = tk.OptionMenu(root, workout_type_var, *workouts.keys(), command=update_exercise_dropdown)
 exercise_dropdown = tk.OptionMenu(root, exercise_var, *workouts[workout_type_var.get()])
-exercise_dropdown.pack(pady=10)
-tk.Label(root, text="Sets:").pack(pady=10)
-tk.Entry(root, textvariable=sets_var).pack(pady=5)
-tk.Label(root, text="Reps:").pack(pady=10)
-tk.Entry(root, textvariable=reps_var).pack(pady=5)
-workout_list = tk.Listbox(root, height=20, width=50)
-workout_list.pack(pady=10)
-tk.Button(root, text="Add Workout", command=lambda: workout_list.insert(tk.END, f"{workout_type_var.get()} - {exercise_var.get()} - {sets_var.get()} sets, {reps_var.get()} reps")).pack(pady=10)
+tk.Label(root, text="Sets:").grid(row=2, column=0, pady=10)
+tk.Entry(root, textvariable=sets_var).grid(row=2, column=1, pady=5)
+tk.Label(root, text="Reps:").grid(row=3, column=0, pady=10)
+tk.Entry(root, textvariable=reps_var).grid(row=3, column=1, pady=5)
+units_dropdown = tk.OptionMenu(root, units_var, *units)
 
-root.mainloop()
+for i, widget in enumerate([workout_type_dropdown, exercise_dropdown, units_dropdown]):
+    widget.grid(row=i, column=0, pady=10, padx=10)
+
+def add_workout():
+    workout_list.insert(tk.END, f"{workout_type_var.get()} - {exercise_var.get()} - {sets_var.get()} sets, {reps_var.get()} reps - {units_var.get()}")
+
+workout_list = tk.Listbox(root, height=20, width=50)
+workout_list.grid(row=0, column=1, rowspan=4, padx=10, pady=10)
+
+tk.Button(root, text="Add Workout", command=add_workout).grid(row=4, column=0, pady=10)
+
+def calculate_bmi():
+    height = float(height_var.get())
+    weight = float(weight_var.get())
+    bmi = round(weight / (height / 100) ** 2, 1)
+    result_var.set(f"BMI: {bmi}")
+
+height_var = tk.StringVar()
+weight_var = tk.StringVar()
+result_var = tk.StringVar()
+
+tk.Label(root, text="Height (cm):").grid(row=5, column=0, pady=10)
+tk.Entry(root, textvariable=height_var).grid(row=5, column=1, pady=5)
+tk.Label(root, text="Weight (kg):").grid(row=6, column=0, pady=10)
+tk.Entry(root, textvariable=weight_var).grid(row=6, column=1, pady=5)
+tk.Button(root, text="Calculate BMI", command=calculate_bmi).grid(row=7, column=0, pady=10)
+tk.Label(root, textvariable=result_var).grid(row=7, column=1, pady=10)
+
+root.mainloop ()
