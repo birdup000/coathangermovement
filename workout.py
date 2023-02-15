@@ -4,54 +4,48 @@ root = tk.Tk()
 root.title("Workout Log")
 root.geometry("800x600")
 
-# Create a dictionary of workout types and their corresponding exercises
 workouts = {
     "Weightlifting": ["Bench Press", "Deadlift", "Squat", "Bicep Curls", "Tricep Dips"],
     "Cardio": ["Running", "Cycling", "Swimming"],
     "Yoga": ["Vinyasa", "Hatha", "Bikram", "Ashtanga", "Iyengar"]
 }
 
-# Create a drop-down menu for selecting the workout type
-workout_type_var = tk.StringVar(value="Weightlifting")
-workout_type_dropdown = tk.OptionMenu(root, workout_type_var, *workouts.keys())
-workout_type_dropdown.pack(pady=10)
+# Add BMI Calculator
+def calculate_bmi():
+    try:
+        weight = float(weight_var.get())
+        height = float(height_var.get())
+        if weight <= 0 or height <= 0:
+            raise ValueError("Weight and height must be positive")
+        if weight_unit_var.get() == "kg":
+            bmi = weight / (height/100)**2
+        else:
+            bmi = (weight * 703) / height**2
+        bmi_var.set(f"{bmi:.2f}")
+    except ValueError as e:
+        bmi_var.set(str(e))
 
-# Create a drop-down menu for selecting the specific exercise
-exercise_var = tk.StringVar(value=workouts[workout_type_var.get()][0])
+weight_var, height_var, weight_unit_var, bmi_var = tk.StringVar(), tk.StringVar(), tk.StringVar(value="kg"), tk.StringVar()
+tk.Label(root, text="BMI Calculator").pack(pady=10)
+tk.Entry(root, textvariable=weight_var).pack(pady=5)
+tk.Label(root, text="Weight Unit:").pack(pady=10)
+tk.OptionMenu(root, weight_unit_var, "kg", "lbs").pack(pady=5)
+tk.Entry(root, textvariable=height_var).pack(pady=5)
+tk.Button(root, text="Calculate BMI", command=calculate_bmi).pack(pady=5)
+tk.Label(root, text="BMI:").pack(pady=10)
+tk.Label(root, textvariable=bmi_var).pack(pady=5)
+
+# Add workout log
+workout_type_var, exercise_var, sets_var, reps_var = tk.StringVar(value="Weightlifting"), tk.StringVar(), tk.StringVar(value="1"), tk.StringVar(value="10")
+tk.OptionMenu(root, workout_type_var, *workouts.keys(), command=lambda _: (exercise_var.set(workouts[workout_type_var.get()][0]), [exercise_dropdown['menu'].add_command(label=exercise, command=lambda exercise=exercise: exercise_var.set(exercise)) for exercise in workouts[workout_type_var.get()]]),).pack(pady=10)
 exercise_dropdown = tk.OptionMenu(root, exercise_var, *workouts[workout_type_var.get()])
 exercise_dropdown.pack(pady=10)
-
-# Update the exercise options when the workout type is changed
-def update_exercise_options(*args):
-    exercise_dropdown["menu"].delete(0, "end")
-    for exercise in workouts[workout_type_var.get()]:
-        exercise_dropdown["menu"].add_command(label=exercise, command=tk._setit(exercise_var, exercise))
-
-workout_type_var.trace("w", update_exercise_options)
-
-# Create an entry field for specifying the number of sets and reps
-sets_var = tk.StringVar(value="1")
-sets_label = tk.Label(root, text="Sets:")
-sets_label.pack(pady=10)
-sets_entry = tk.Entry(root, textvariable=sets_var)
-sets_entry.pack(pady=5)
-
-reps_var = tk.StringVar(value="10")
-reps_label = tk.Label(root, text="Reps:")
-reps_label.pack(pady=10)
-reps_entry = tk.Entry(root, textvariable=reps_var)
-reps_entry.pack(pady=5)
-
-# Create a list to display the workout history
+tk.Label(root, text="Sets:").pack(pady=10)
+tk.Entry(root, textvariable=sets_var).pack(pady=5)
+tk.Label(root, text="Reps:").pack(pady=10)
+tk.Entry(root, textvariable=reps_var).pack(pady=5)
 workout_list = tk.Listbox(root, height=20, width=50)
 workout_list.pack(pady=10)
-
-# Create a button to add the workout
-def add_workout():
-    workout = f"{workout_type_var.get()} - {exercise_var.get()} - {sets_var.get()} sets, {reps_var.get()} reps"
-    workout_list.insert(tk.END, workout)
-
-add_button = tk.Button(root, text="Add Workout", command=add_workout)
-add_button.pack(pady=10)
+tk.Button(root, text="Add Workout", command=lambda: workout_list.insert(tk.END, f"{workout_type_var.get()} - {exercise_var.get()} - {sets_var.get()} sets, {reps_var.get()} reps")).pack(pady=10)
 
 root.mainloop()
